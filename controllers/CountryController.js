@@ -2,8 +2,18 @@ const { Op } = require('sequelize');
 const { Country, Region } = require('../models');
 
 
+const getAllAndCreateCountries = (req, res) => {
+  const { requestType } = req.body;
+  if(requestType === 'getAll') {
+    getCountries(req, res)
+  }
+  if(requestType === 'create') {
+    createCountry(req, res)
+  }
+}
+
 // get all countries
-const getCountries = async (req, res) => {
+const getCountries = (req, res) => {
   const { page = 1, size, search } = req.query;
   try {
     let whereClause = {};
@@ -27,93 +37,119 @@ const getCountries = async (req, res) => {
       queryOptions.offset = offset;
       queryOptions.limit = limit;
     }
-    const { count, rows } = await Country.findAndCountAll(queryOptions);
-    return res.status(200).json({
-      total: count,
-      data: rows,
-      currentPage: offset,
-      paginationCount: limit,
-      pageCount: parseInt(count / limit)
-    });
+    Country.findAndCountAll(queryOptions)
+      .then(({ count, rows }) => {
+        res.status(200).json({
+          total: count,
+          data: rows,
+          currentPage: offset,
+          paginationCount: limit,
+          pageCount: parseInt(count / limit)
+        })
+      })
+      .catch((error) => {
+        return res.status(500).json({ error: error.message });
+      })
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
 
 // create new country
-const createCountry = async (req, res) => {
+const createCountry = (req, res) => {
   try {
-    const { CountryName } = req.body;
-    const country = await Country.create({ CountryName });
-    res.status(201).json(country);
+    const { CountryName } = req.body.data;
+    Country.create({ CountryName })
+      .then((country) => {
+        res.status(201).json(country);
+      })
+      .catch((error) => {
+        errorHandler('create', error);
+      })
   } catch (error) {
-    if(error?.name === 'SequelizeUniqueConstraintError') {
-      res.status(500).json({ message: 'This country name already exists.' });
-    } else {
-      res.status(500).json({ message: 'Failed to create country' });
-    }
+    errorHandler('create', error);
   }
 };
 
 // update country by id
-const updateCountry = async (req, res) => {
+const updateCountry = (req, res) => {
   try {
     const { CountryName } = req.body;
     const { id } = req.params;
-    const findCountryById = await Country.findOne({
-      where: {
-        id: id
-      }
-    });
-    if(!findCountryById) {
-      res.status(400).send({
-        status: 'error',
-        message: `Country with id ${id} not found`
+
+    Country
+      .findOne({ where: { id } })
+      .then((country) => {
+        if(!country) {
+          res.status(400).send({
+            status: 'error',
+            message: `Country with id ${id} not found`
+          })
+        }
+        if(CountryName) {
+          country.CountryName = CountryName
+        }
+
+        country
+          .save()
+          .then((updateCountry) => {
+            if(!updateCountry) {
+              res.status(400).send({
+                status: 'error',
+                message: `data country with id ${id} failed update`
+              })
+            }
+            res.status(200).send({
+              status: 'success',
+              data: updateCountry
+            });
+          })
+          .catch((error) => {
+            errorHandler('update', error);
+          })
       })
-    }
-    if(CountryName) {
-      findCountryById.CountryName = CountryName
-    }
-    const updateCountry = await findCountryById.save();
-    if(!updateCountry) {
-      res.status(400).send({
-        status: 'error',
-        message: `data country with id ${id} failed update`
+      .catch((error) => {
+        errorHandler('update', error);
       })
-    }
-    res.status(200).send({
-      status: 'success',
-      data: updateCountry
-    });
   } catch (error) {
-    if(error?.name === 'SequelizeUniqueConstraintError') {
-      res.status(500).json({ message: 'This country name already exists.' });
-    } else {
-      res.status(500).json({ message: 'Failed to update country' });
-    }
+    errorHandler('update', error);
   }
 };
 
 // delete country by id
-const deleteCountry = async (req, res) => {
+const deleteCountry = (req, res) => {
   try {
     const { id } = req.params;
-    const deletedCountry = await Country.destroy({
-      where: { id }
-    });
-    res.status(200).send({
-      status: 'success',
-      data: deletedCountry
-    });
+
+    Country
+      .destroy({ where: { id } })
+      .then((deletedCountry) => {
+        res.status(200).send({
+          status: 'success',
+          data: deletedCountry
+        });
+      })
+      .catch(() => {
+        res.status(500).json({ message: 'Failed to delete country' });
+      })
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete country' });
   }
 };
 
 
+
+const errorHandler = (type, error) => {
+  if(error?.name === 'SequelizeUniqueConstraintError') {
+    res.status(500).json({ message: 'This country name already exists.' });
+  } else {
+    res.status(500).json({ message: `Failed to ${type} country` });
+  }
+}
+
+
 module.exports = {
-  getCountries,
-  createCountry,
+  getAllAndCreateCountries,
   updateCountry,
   deleteCountry,
 };

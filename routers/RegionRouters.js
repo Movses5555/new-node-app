@@ -1,16 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { 
-  createRegion, 
-  getRegions,
+  getAllAndCreateRegions,
   updateRegion,
   deleteRegion,
 } = require('../controllers/RegionController');
 
-// Route to get all regions
-router.get('/', getRegions);
-// Route to create a new region
-router.post('/', createRegion);
+// Route to get all and create regions
+router.post('/', getAllAndCreateRegions);
+
 // Route to update a region
 router.put('/:id', updateRegion);
 // Route to delete a region
