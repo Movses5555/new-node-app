@@ -1,0 +1,55 @@
+GET http://localhost:8000/api/countries
+
+
+### Create a country
+POST http://localhost:8000/api/countries
+Content-Type: application/json
+
+{
+  "CountryName": "Armenia"
+}
+
+### Update a country
+PUT http://localhost:8000/api/countries/1
+Content-Type: application/json
+
+{
+  "CountryName":"qqw"
+}
+
+
+### Get a regions
+GET http://localhost:8000/api/regions
+
+### Create a region
+POST http://localhost:8000/api/regions
+Content-Type: application/json
+
+{
+  "RegionName": "Kotaik",
+  "countryId": 2
+}
+
+### Update a region
+PUT http://localhost:8000/api/regions/1
+Content-Type: application/json
+
+{
+  "RegionName":"Kotayqsss5588",
+  "countryId":2
+}
+
+### Get a cities
+GET http://localhost:8000/api/cities
+
+
+### Create a city
+POST http://localhost:8000/api/cities
+Content-Type: application/json
+
+{
+  "CityName": "Tibilisi",
+  "regionId": 2
+}
+
+
