@@ -5,11 +5,15 @@ const {
     RegionsRouters,
     CitiesRouters,
 } = require('./routers');
+const config = require('config');
+
+const CORS_ORIGIN = config.get('corsOrigin');
+const APP_PORT = config.get('appPort');
 
 const app = express()
 
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN,
+    origin: CORS_ORIGIN,
     credentials: true
 };
 
@@ -21,6 +25,6 @@ app.use('/api/regions', RegionsRouters);
 app.use('/api/cities', CitiesRouters);
 
 
-app.listen(process.env.APP_PORT, () => {
-   console.log(`Example app listening on port ${process.env.APP_PORT}`)
+app.listen(APP_PORT, () => {
+   console.log(`Example app listening on port ${APP_PORT}`)
 })

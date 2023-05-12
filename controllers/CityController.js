@@ -75,7 +75,7 @@ const updateCity = (req, res) => {
     const { id } = req.params;
 
     City
-      .findOne({ where: { id } })
+      .findByPk(id)
       .then((city) => {
         if(!city) {
           res.status(400).send({
@@ -120,16 +120,29 @@ const updateCity = (req, res) => {
 const deleteCity = (req, res) => {
   try {
     const { id } = req.params;
+
     City
-      .destroy({ where: { id } })
-      .then((deletedCity) => {
-        res.status(200).send({
-          status: 'success',
-          data: deletedCity
-        });
+      .findByPk(id)
+      .then((city) => {
+        if(city) {
+
+          City
+            .destroy({ where: { id } })
+            .then((deletedCity) => {
+              res.status(200).send({
+                status: 'success',
+                data: deletedCity
+              });
+            })
+            .catch((error) => {
+              res.status(500).json({ message: 'Failed to delete city' });
+            })
+        } else {
+          res.status(500).json({ message: `City with id ${id} not found` });
+        }
       })
-      .catch(() => {
-        res.status(500).json({ message: 'Failed to delete city' });
+      .catch((error) => {
+        res.status(500).json({ message: error.message });
       })
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete city' });

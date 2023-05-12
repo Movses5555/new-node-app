@@ -5,7 +5,6 @@ const Region = sequelize.define('regions', {
   RegionName: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true
   },
   countryId: {
     type: DataTypes.INTEGER,

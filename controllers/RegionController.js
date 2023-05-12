@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const sequelize = require('../config/database');
 const { Region, City } = require('../models');
 
 
@@ -54,28 +55,30 @@ const getRegions = (req, res) => {
 
 // create new region
 const createRegion = (req, res) => {
-  try {
-    const { RegionName, countryId } = req.body.data;
-
-    Region
-      .create({ RegionName, countryId })
-      .then((region) => {
-        res.status(201).json(region);
-      })
-      .catch((error) => {
-        if(error?.name === 'SequelizeUniqueConstraintError') {
-          res.status(500).json({ message: 'This region name already exists.' });
-        } else {
-          res.status(500).json({ message: 'Failed to create region' });
-        }
-      })
-  } catch (error) {
-    if(error?.name === 'SequelizeUniqueConstraintError') {
-      res.status(500).json({ message: 'This region name already exists.' });
-    } else {
+  const { RegionName, countryId } = req.body.data;
+  console.log({ RegionName, countryId });
+  
+  sequelize
+    .transaction()
+    .then(function (t) {
+      Region
+        .create({ RegionName, countryId })
+        .then((region) => {
+          res.status(201).json(region);
+        })
+        .catch((error) => {
+          console.log('error=====', error);
+          if(error?.name === 'SequelizeUniqueConstraintError') {
+            res.status(500).json({ message: 'This region name already exists.' });
+          } else {
+            res.status(500).json({ message: 'Failed to create region' });
+          }
+        })
+    })
+    .catch(function (error) {
+      console.log('error=====', error);
       res.status(500).json({ message: 'Failed to create region' });
-    }
-  }
+    });
 };
 
 // update region by id
@@ -85,7 +88,7 @@ const updateRegion = (req, res) => {
     const { id } = req.params;
 
     Region
-      .findOne({ where: { id } })
+      .findByPk(id)
       .then((region) => {
         if(!region) {
           res.status(400).send({
@@ -132,7 +135,7 @@ const deleteRegion = (req, res) => {
     const { id } = req.params;
 
     Region
-      .findOne({ where: { id } })
+      .findByPk(id)
       .then((region) => {
         if(region) {
 

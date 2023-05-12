@@ -37,7 +37,9 @@ const getCountries = (req, res) => {
       queryOptions.offset = offset;
       queryOptions.limit = limit;
     }
-    Country.findAndCountAll(queryOptions)
+    
+    Country
+      .findAndCountAll(queryOptions)
       .then(({ count, rows }) => {
         res.status(200).json({
           total: count,
@@ -59,7 +61,9 @@ const getCountries = (req, res) => {
 const createCountry = (req, res) => {
   try {
     const { CountryName } = req.body.data;
-    Country.create({ CountryName })
+
+    Country
+      .create({ CountryName })
       .then((country) => {
         res.status(201).json(country);
       })
@@ -78,7 +82,7 @@ const updateCountry = (req, res) => {
     const { id } = req.params;
 
     Country
-      .findOne({ where: { id } })
+      .findByPk(id)
       .then((country) => {
         if(!country) {
           res.status(400).send({
