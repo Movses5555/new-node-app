@@ -61,10 +61,10 @@ const createCity = (req, res) => {
         res.status(201).json(city);
       })
       .catch((error) => {
-        errorHandler('create', error)
+        errorHandler(res, 'create', error)
       })
   } catch (error) {
-    errorHandler('create', error)
+    errorHandler(res, 'create', error)
   }
 };
 
@@ -150,7 +150,7 @@ const deleteCity = (req, res) => {
 };
 
 
-const errorHandler = (type, error) => {
+const errorHandler = (res, type, error) => {
   if(error?.name === 'SequelizeUniqueConstraintError') {
     res.status(500).json({ message: 'This city name already exists.' });
   } else {

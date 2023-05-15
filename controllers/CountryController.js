@@ -68,10 +68,10 @@ const createCountry = (req, res) => {
         res.status(201).json(country);
       })
       .catch((error) => {
-        errorHandler('create', error);
+        errorHandler(res, 'create', error);
       })
   } catch (error) {
-    errorHandler('create', error);
+    errorHandler(res, 'create', error);
   }
 };
 
@@ -109,14 +109,14 @@ const updateCountry = (req, res) => {
             });
           })
           .catch((error) => {
-            errorHandler('update', error);
+            errorHandler(res, 'update', error);
           })
       })
       .catch((error) => {
-        errorHandler('update', error);
+        errorHandler(res, 'update', error);
       })
   } catch (error) {
-    errorHandler('update', error);
+    errorHandler(res, 'update', error);
   }
 };
 
@@ -143,7 +143,7 @@ const deleteCountry = (req, res) => {
 
 
 
-const errorHandler = (type, error) => {
+const errorHandler = (res, type, error) => {
   if(error?.name === 'SequelizeUniqueConstraintError') {
     res.status(500).json({ message: 'This country name already exists.' });
   } else {
